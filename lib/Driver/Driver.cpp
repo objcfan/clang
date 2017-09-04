@@ -1559,6 +1559,14 @@ static bool DiagnoseInputExistence(const Driver &D, const DerivedArgList &Args,
   return false;
 }
 
+bool hasEnding(std::string const &fullString, std::string const &ending) {
+    if (fullString.length() >= ending.length()) {
+        return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
+}
+
 // Construct a the list of inputs and their types.
 void Driver::BuildInputs(const ToolChain &TC, DerivedArgList &Args,
                          InputList &Inputs) const {
@@ -1668,8 +1676,14 @@ void Driver::BuildInputs(const ToolChain &TC, DerivedArgList &Args,
         }
       }
 
-      if (DiagnoseInputExistence(*this, Args, Value, Ty))
-        Inputs.push_back(std::make_pair(Ty, A));
+        if (DiagnoseInputExistence(*this, Args, Value, Ty)) {
+            //FIXME CDTODO
+            //现在暂时采取过滤路径的方法来确保Input参数的正确性，正规改法要改解析的地方
+            bool isEndWithM = hasEnding(Value, ".m");
+            if (isEndWithM) {
+                Inputs.push_back(std::make_pair(Ty, A));
+            }
+        }
 
     } else if (A->getOption().matches(options::OPT__SLASH_Tc)) {
       StringRef Value = A->getValue();
